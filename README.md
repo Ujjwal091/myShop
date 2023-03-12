@@ -1,3 +1,3 @@
 # myshop
 
-A new Flutter project.
+a simple shopping application in flutter
