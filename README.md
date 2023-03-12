@@ -1,3 +1,3 @@
 # myshop
 
-a simple shopping application in flutter
+A simple shopping application in flutter
