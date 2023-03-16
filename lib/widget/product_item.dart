@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myshop/provider/auth.dart';
 import 'package:provider/provider.dart';
 
 import '../provider/cart.dart';
@@ -19,6 +20,7 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var userData = Provider.of<Auth>(context, listen: false);
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
     return ClipRRect(
@@ -29,8 +31,15 @@ class ProductItem extends StatelessWidget {
             builder: (context, value, child) => IconButton(
               icon: Icon(
                   product.isFavorite ? Icons.favorite : Icons.favorite_border),
-              onPressed: () {
-                product.toggleFavoriteStatus();
+              onPressed: () async {
+                try {
+                  await product.toggleFavoriteStatus(
+                      userData.token!, userData.userId);
+                } catch (error) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('something went wrong')));
+                }
               },
               color: Theme.of(context).colorScheme.secondary,
             ),
@@ -61,7 +70,7 @@ class ProductItem extends StatelessWidget {
         child: InkWell(
           onTap: () {
             Navigator.of(context).pushNamed(
-              ProductDetailScreen.route,
+              ProductDetailScreen.routeName,
               arguments: product.id,
             );
           },

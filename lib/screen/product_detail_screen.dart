@@ -8,7 +8,7 @@ class ProductDetailScreen extends StatelessWidget {
   // final double price;
 
   // ProductDetailScreen(this.title, this.price);
-  static const route = '/product-detail';
+  static const routeName = '/product-detail';
 
   const ProductDetailScreen({super.key});
 

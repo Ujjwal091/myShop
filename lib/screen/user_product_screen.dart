@@ -10,9 +10,13 @@ class UserProductScreen extends StatelessWidget {
   static const routeName = '/user-products';
   const UserProductScreen({super.key});
 
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<Products>(context, listen: false).fetAndSetProducts(true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final productData = Provider.of<Products>(context);
+    // final productData = Provider.of<Products>(context);
     return Scaffold(
       // appBar: AppBar(),
       appBar: AppBar(
@@ -26,21 +30,34 @@ class UserProductScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: ListView.builder(
-          itemCount: productData.items.length,
-          itemBuilder: ((context, index) => Column(
-                children: [
-                  UserProductItem(
-                    id: productData.items[index].id,
-                    title: productData.items[index].title,
-                    imageUrl: productData.items[index].imageUrl,
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (context, snapshot) =>
+            snapshot.connectionState == ConnectionState.waiting
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => _refreshProducts(context),
+                    child: Consumer<Products>(
+                      builder: (context, productData, child) => Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: ListView.builder(
+                          itemCount: productData.items.length,
+                          itemBuilder: ((context, index) => Column(
+                                children: [
+                                  UserProductItem(
+                                    id: productData.items[index].id,
+                                    title: productData.items[index].title,
+                                    imageUrl: productData.items[index].imageUrl,
+                                  ),
+                                  const Divider()
+                                ],
+                              )),
+                        ),
+                      ),
+                    ),
                   ),
-                  const Divider()
-                ],
-              )),
-        ),
       ),
       drawer: const AppDrawer(),
     );

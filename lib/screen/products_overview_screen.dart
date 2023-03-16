@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myshop/provider/products.dart';
 import 'package:provider/provider.dart';
 
 import './cart_screen.dart';
@@ -13,6 +14,7 @@ enum FilterOptions {
 }
 
 class ProductsOverviewScreen extends StatefulWidget {
+  static const routeName = 'products-overview';
   const ProductsOverviewScreen({super.key});
 
   @override
@@ -21,6 +23,34 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorites = false;
+  var _isInit = false;
+  var _isLoading = false;
+
+  void _showError() {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Something went wrong')));
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit == false) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<Products>(context).fetAndSetProducts().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      }).catchError((_) {
+        setState(() {
+          _isLoading = false;
+        });
+        _showError();
+      });
+    }
+    _isInit = true;
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +59,8 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         title: const Text("MyShop"),
         actions: [
           PopupMenuButton(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(15))),
             onSelected: (FilterOptions selectedValue) {
               setState(() {
                 if (selectedValue == FilterOptions.favorites) {
@@ -47,24 +79,30 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
             ],
           ),
           Consumer<Cart>(
-            builder: (_, cartData, ch) => Badge(
-              value: cartData.itemCount.toString(),
-              color: Colors.blue,
-              child: ch!,
+            builder: (_, cartData, ch) => InkWell(
+              onTap: () {
+                Navigator.of(context).pushNamed(CartScreen.routeName);
+              },
+              child: Badge(
+                value: cartData.itemCount.toString(),
+                color: Colors.blue,
+                child: ch!,
+              ),
             ),
             child: IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                Navigator.of(context).pushNamed(CartScreen.routeName
-                    // ProductDetailScreen.route,
-                    // arguments: product.id,
-                    );
+                Navigator.of(context).pushNamed(CartScreen.routeName);
               },
             ),
           ),
         ],
       ),
-      body: ProductsGrid(_showOnlyFavorites),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductsGrid(_showOnlyFavorites),
       drawer: const AppDrawer(),
     );
   }
