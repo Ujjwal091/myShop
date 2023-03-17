@@ -34,7 +34,7 @@ class Auth with ChangeNotifier {
   Future<void> _authenticate(
       String email, String password, String urlSegment) async {
     final url = Uri.parse(
-        '$authUrl$urlSegment?key=AIzaSyBCafiz7E85ksK-qS7c7mYJbUicgR-UAmg');
+        '$authUrl$urlSegment?key=$apiKey');
     try {
       final response = await http.post(
         url,
